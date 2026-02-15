@@ -1,18 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-// Simulación temporal
 let fiados: any[] = []
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // Filtrar fiados de este cliente
+    const { id } = await params
     const clientFiados = fiados
-      .filter(f => f.clientId === params.id)
+      .filter(f => f.clientId === id)
       .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-
+    
     return NextResponse.json(clientFiados)
   } catch (error) {
     console.error('Error obteniendo fiados:', error)

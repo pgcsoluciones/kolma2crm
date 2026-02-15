@@ -1,0 +1,17 @@
+{
+  "/_not-found/page": "/_not-found",
+  "/api/auth/login/route": "/api/auth/login",
+  "/api/auth/register/route": "/api/auth/register",
+  "/api/clients/[id]/fiados/route": "/api/clients/[id]/fiados",
+  "/api/clients/[id]/route": "/api/clients/[id]",
+  "/api/clients/route": "/api/clients",
+  "/api/dashboard/route": "/api/dashboard",
+  "/api/fiados/route": "/api/fiados",
+  "/favicon.ico/route": "/favicon.ico",
+  "/dashboard/page": "/dashboard",
+  "/login/page": "/login",
+  "/page": "/",
+  "/register/page": "/register",
+  "/dashboard/clients/[id]/page": "/dashboard/clients/[id]",
+  "/dashboard/clients/page": "/dashboard/clients"
+}

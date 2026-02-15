@@ -9,7 +9,9 @@
     "lint": "eslint",
     "pages:build": "npx @opennextjs/cloudflare build",
     "pages:deploy": "npm run pages:build && wrangler pages deploy .open-next/worker",
-    "pages:dev": "wrangler pages dev .open-next/worker --compatibility-date=2024-01-01 --compatibility-flag=nodejs_compat"
+    "pages:dev": "wrangler pages dev .open-next/worker --compatibility-date=2024-01-01 --compatibility-flag=nodejs_compat",
+    "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+    "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
     "next": "15.5.10",

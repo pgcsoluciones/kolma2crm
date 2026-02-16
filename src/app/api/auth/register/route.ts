@@ -1,48 +1,66 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Simulación temporal - en producción usaremos D1
-let users: any[] = []
-let organizations: any[] = []
+import { getDB, generateId } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
     const { colmadoName, ownerName, email, phone, password } = body
 
-    // Validar que el email no exista
-    if (users.find(u => u.email === email)) {
+    // Validaciones básicas
+    if (!colmadoName || !ownerName || !email || !password) {
+      return NextResponse.json(
+        { error: 'Todos los campos son requeridos' },
+        { status: 400 }
+      )
+    }
+
+    const db = await getDB()
+
+    // Verificar si el email ya existe
+    const existingUser = await db
+      .prepare('SELECT id FROM users WHERE email = ?')
+      .bind(email)
+      .first()
+
+    if (existingUser) {
       return NextResponse.json(
         { error: 'Este email ya está registrado' },
         { status: 400 }
       )
     }
 
-    // Crear organización
-    const orgId = `org_${Date.now()}`
-    const organization = {
-      id: orgId,
-      name: colmadoName,
-      ownerName,
-      phone,
-      createdAt: new Date().toISOString(),
-    }
-    organizations.push(organization)
+    // Crear store (colmado)
+    const storeId = generateId('store')
+    await db
+      .prepare(
+        'INSERT INTO stores (id, name, owner_name, phone, email) VALUES (?, ?, ?, ?, ?)'
+      )
+      .bind(storeId, colmadoName, ownerName, phone || null, email)
+      .run()
 
-    // Crear usuario
-    const userId = `user_${Date.now()}`
-    const user = {
-      id: userId,
-      email,
-      name: ownerName,
-      password, // En producción: bcrypt.hash(password, 10)
-      organizationId: orgId,
-      createdAt: new Date().toISOString(),
-    }
-    users.push(user)
+    // Crear usuario (dueño)
+    const userId = generateId('user')
+    await db
+      .prepare(
+        'INSERT INTO users (id, store_id, email, password, name, phone, role) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      )
+      .bind(userId, storeId, email, password, ownerName, phone || null, 'owner')
+      .run()
+
+    // Crear suscripción con plan básico por defecto (trial)
+    const subscriptionId = generateId('sub')
+    await db
+      .prepare(
+        'INSERT INTO subscriptions (id, store_id, plan_id, status) VALUES (?, ?, ?, ?)'
+      )
+      .bind(subscriptionId, storeId, 'plan_basic', 'trial')
+      .run()
 
     return NextResponse.json({
       success: true,
       message: 'Colmado registrado exitosamente',
+      storeId,
+      userId,
     })
   } catch (error) {
     console.error('Error en registro:', error)

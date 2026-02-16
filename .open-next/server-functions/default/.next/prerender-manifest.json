@@ -55,6 +55,54 @@
         "x-next-revalidate-tag-token"
       ]
     },
+    "/dashboard/clients/new": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/dashboard/clients/new",
+      "dataRoute": "/dashboard/clients/new.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
+    "/dashboard": {
+      "experimentalBypassFor": [
+        {
+          "type": "header",
+          "key": "next-action"
+        },
+        {
+          "type": "header",
+          "key": "content-type",
+          "value": "multipart/form-data;.*"
+        }
+      ],
+      "initialRevalidateSeconds": false,
+      "srcRoute": "/dashboard",
+      "dataRoute": "/dashboard.rsc",
+      "allowHeader": [
+        "host",
+        "x-matched-path",
+        "x-prerender-revalidate",
+        "x-prerender-revalidate-if-generated",
+        "x-next-revalidated-tags",
+        "x-next-revalidate-tag-token"
+      ]
+    },
     "/dashboard/clients": {
       "experimentalBypassFor": [
         {
@@ -150,37 +198,13 @@
         "x-next-revalidated-tags",
         "x-next-revalidate-tag-token"
       ]
-    },
-    "/dashboard": {
-      "experimentalBypassFor": [
-        {
-          "type": "header",
-          "key": "next-action"
-        },
-        {
-          "type": "header",
-          "key": "content-type",
-          "value": "multipart/form-data;.*"
-        }
-      ],
-      "initialRevalidateSeconds": false,
-      "srcRoute": "/dashboard",
-      "dataRoute": "/dashboard.rsc",
-      "allowHeader": [
-        "host",
-        "x-matched-path",
-        "x-prerender-revalidate",
-        "x-prerender-revalidate-if-generated",
-        "x-next-revalidated-tags",
-        "x-next-revalidate-tag-token"
-      ]
     }
   },
   "dynamicRoutes": {},
   "notFoundRoutes": [],
   "preview": {
-    "previewModeId": "5c30b8930a8ff1030ce2c029a7955c62",
-    "previewModeSigningKey": "47f76f6774c14a3440cf5f1fc776572f8a965efe55c734a6210d2e24f66f2598",
-    "previewModeEncryptionKey": "2d82c35a1cfd6d9f41a6d3d3f406335c256fce2860989967dd2f53f79cadd6c7"
+    "previewModeId": "f626dff3ac09abc0e6ba68b5d3733e88",
+    "previewModeSigningKey": "2f97ea3b2fd08c48b02c89356cdbf20aadcfedf4ac74bae0d6141dce61b5b5b2",
+    "previewModeEncryptionKey": "8921c87119baf965b48eb8f3e6431e6eab2678147816d0f250bed3f21b2815ae"
   }
 }

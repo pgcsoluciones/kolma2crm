@@ -1,17 +1,33 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-// Simulación temporal - compartimos arrays
-let clients: any[] = []
-let fiados: any[] = []
+import { getDB, generateId } from '@/lib/db'
 
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { clientId, type, amount, description } = body
+    const { clientId, storeId, type, amount, description } = body
+
+    if (!clientId || !storeId || !type || !amount) {
+      return NextResponse.json(
+        { error: 'clientId, storeId, type y amount son requeridos' },
+        { status: 400 }
+      )
+    }
+
+    if (type !== 'CHARGE' && type !== 'PAYMENT') {
+      return NextResponse.json(
+        { error: 'type debe ser CHARGE o PAYMENT' },
+        { status: 400 }
+      )
+    }
+
+    const db = await getDB()
 
     // Buscar cliente
-    const client = clients.find(c => c.id === clientId)
-    
+    const client = await db
+      .prepare('SELECT id, current_debt, credit_limit FROM clients WHERE id = ?')
+      .bind(clientId)
+      .first<{ id: string; current_debt: number; credit_limit: number }>()
+
     if (!client) {
       return NextResponse.json(
         { error: 'Cliente no encontrado' },
@@ -20,27 +36,25 @@ export async function POST(request: NextRequest) {
     }
 
     // Calcular nuevo balance
-    let newBalance = client.currentDebt
+    let newBalance = client.current_debt
 
     if (type === 'CHARGE') {
-      // Es un cargo (nueva deuda)
-      newBalance = client.currentDebt + amount
-      
+      newBalance = client.current_debt + amount
+
       // Verificar límite de crédito
-      if (newBalance > client.creditLimit && client.creditLimit > 0) {
+      if (client.credit_limit > 0 && newBalance > client.credit_limit) {
         return NextResponse.json(
-          { 
+          {
             error: 'Excede el límite de crédito',
-            current: newBalance,
-            limit: client.creditLimit
+            currentDebt: client.current_debt,
+            limit: client.credit_limit,
           },
           { status: 400 }
         )
       }
     } else {
-      // Es un pago (abono)
-      newBalance = client.currentDebt - amount
-      
+      newBalance = client.current_debt - amount
+
       if (newBalance < 0) {
         return NextResponse.json(
           { error: 'El pago excede la deuda actual' },
@@ -50,20 +64,39 @@ export async function POST(request: NextRequest) {
     }
 
     // Crear registro de fiado
+    const fiadoId = generateId('fiado')
+
+    await db
+      .prepare(`
+        INSERT INTO fiados (id, store_id, client_id, amount, type, balance, description)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `)
+      .bind(
+        fiadoId,
+        storeId,
+        clientId,
+        amount,
+        type,
+        newBalance,
+        description || null
+      )
+      .run()
+
+    // Actualizar balance del cliente
+    await db
+      .prepare('UPDATE clients SET current_debt = ? WHERE id = ?')
+      .bind(newBalance, clientId)
+      .run()
+
     const newFiado = {
-      id: `fiado_${Date.now()}`,
+      id: fiadoId,
       clientId,
+      storeId,
       type,
       amount,
       balance: newBalance,
       description: description || '',
-      createdAt: new Date().toISOString(),
     }
-
-    fiados.push(newFiado)
-
-    // Actualizar balance del cliente
-    client.currentDebt = newBalance
 
     return NextResponse.json(newFiado, { status: 201 })
   } catch (error) {

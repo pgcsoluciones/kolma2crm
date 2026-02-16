@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation'
 
 export default function DashboardPage() {
   const router = useRouter()
+  const [storeName, setStoreName] = useState('')
   const [data, setData] = useState({
     totalFiados: 0,
     totalClients: 0,
     clientsWithDebt: 0,
+    todayFiados: 0,
+    todayPayments: 0,
   })
   const [loading, setLoading] = useState(true)
 
@@ -18,7 +21,16 @@ export default function DashboardPage() {
 
   const fetchDashboardData = async () => {
     try {
-      const res = await fetch('/api/dashboard')
+      // Obtener storeId del localStorage
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        router.push('/login')
+        return
+      }
+      const user = JSON.parse(userStr)
+      setStoreName(user.storeName || 'Mi Colmado')
+
+      const res = await fetch(`/api/dashboard?storeId=${user.storeId}`)
       if (res.ok) {
         const dashboardData = await res.json()
         setData(dashboardData)
@@ -54,7 +66,10 @@ export default function DashboardPage() {
       <div className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold text-gray-900">KOLMA2</h1>
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">KOLMA2</h1>
+              <p className="text-sm text-gray-600">{storeName}</p>
+            </div>
             <button
               onClick={handleLogout}
               className="text-sm text-gray-600 hover:text-gray-900"
@@ -85,11 +100,11 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Fiados</p>
-                <p className="text-3xl font-bold text-green-600 mt-2">
-                  RD$ {data.totalFiados.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                <p className="text-3xl font-bold text-red-600 mt-2">
+                  RD$ {(data.totalFiados || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                 </p>
               </div>
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+              <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
                 <span className="text-2xl">💰</span>
               </div>
             </div>
@@ -100,7 +115,7 @@ export default function DashboardPage() {
               <div>
                 <p className="text-sm text-gray-600">Total Clientes</p>
                 <p className="text-3xl font-bold text-blue-600 mt-2">
-                  {data.totalClients}
+                  {data.totalClients || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -114,13 +129,29 @@ export default function DashboardPage() {
               <div>
                 <p className="text-sm text-gray-600">Con Deuda</p>
                 <p className="text-3xl font-bold text-orange-600 mt-2">
-                  {data.clientsWithDebt}
+                  {data.clientsWithDebt || 0}
                 </p>
               </div>
               <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center">
                 <span className="text-2xl">⚠️</span>
               </div>
             </div>
+          </div>
+        </div>
+
+        {/* Today Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-sm text-gray-600">Fiados Hoy</p>
+            <p className="text-2xl font-bold text-red-600 mt-2">
+              RD$ {(data.todayFiados || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+            </p>
+          </div>
+          <div className="bg-white rounded-lg shadow p-6">
+            <p className="text-sm text-gray-600">Pagos Hoy</p>
+            <p className="text-2xl font-bold text-green-600 mt-2">
+              RD$ {(data.todayPayments || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+            </p>
           </div>
         </div>
 

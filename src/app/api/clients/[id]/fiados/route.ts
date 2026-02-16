@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-
-let fiados: any[] = []
+import { getDB } from '@/lib/db'
 
 export async function GET(
   request: NextRequest,
@@ -8,11 +7,28 @@ export async function GET(
 ) {
   try {
     const { id } = await params
-    const clientFiados = fiados
-      .filter(f => f.clientId === id)
-      .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    
-    return NextResponse.json(clientFiados)
+
+    const db = await getDB()
+
+    const { results } = await db
+      .prepare(`
+        SELECT 
+          id,
+          client_id as clientId,
+          store_id as storeId,
+          amount,
+          type,
+          balance,
+          description,
+          created_at as createdAt
+        FROM fiados 
+        WHERE client_id = ?
+        ORDER BY created_at DESC
+      `)
+      .bind(id)
+      .all()
+
+    return NextResponse.json(results || [])
   } catch (error) {
     console.error('Error obteniendo fiados:', error)
     return NextResponse.json(

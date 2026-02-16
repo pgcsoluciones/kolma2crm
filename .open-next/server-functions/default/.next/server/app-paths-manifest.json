@@ -8,10 +8,11 @@
   "/api/dashboard/route": "app/api/dashboard/route.js",
   "/api/fiados/route": "app/api/fiados/route.js",
   "/favicon.ico/route": "app/favicon.ico/route.js",
+  "/dashboard/clients/new/page": "app/dashboard/clients/new/page.js",
+  "/dashboard/clients/page": "app/dashboard/clients/page.js",
   "/dashboard/page": "app/dashboard/page.js",
   "/login/page": "app/login/page.js",
   "/page": "app/page.js",
   "/register/page": "app/register/page.js",
-  "/dashboard/clients/[id]/page": "app/dashboard/clients/[id]/page.js",
-  "/dashboard/clients/page": "app/dashboard/clients/page.js"
+  "/dashboard/clients/[id]/page": "app/dashboard/clients/[id]/page.js"
 }

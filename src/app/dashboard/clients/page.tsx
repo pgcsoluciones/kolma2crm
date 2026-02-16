@@ -23,7 +23,15 @@ export default function ClientsPage() {
 
   const fetchClients = async () => {
     try {
-      const res = await fetch('/api/clients')
+      // Obtener storeId del localStorage
+      const userStr = localStorage.getItem('user')
+      if (!userStr) {
+        router.push('/login')
+        return
+      }
+      const user = JSON.parse(userStr)
+
+      const res = await fetch(`/api/clients?storeId=${user.storeId}`)
       if (res.ok) {
         const data = await res.json()
         setClients(data)
@@ -133,7 +141,7 @@ export default function ClientsPage() {
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Deuda:</span>
                     <span className={`font-bold ${client.currentDebt > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                      RD$ {client.currentDebt.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                      RD$ {(client.currentDebt || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
                 </div>

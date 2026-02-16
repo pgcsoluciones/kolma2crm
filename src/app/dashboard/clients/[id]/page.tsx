@@ -31,12 +31,24 @@ export default function ClientDetailPage() {
   const [client, setClient] = useState<Client | null>(null)
   const [fiados, setFiados] = useState<Fiado[]>([])
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
   const [showFiadoForm, setShowFiadoForm] = useState(false)
   const [fiadoType, setFiadoType] = useState<'CHARGE' | 'PAYMENT'>('CHARGE')
   const [amount, setAmount] = useState('')
   const [description, setDescription] = useState('')
+  const [storeId, setStoreId] = useState('')
 
   useEffect(() => {
+    // Obtener storeId del localStorage
+    const userStr = localStorage.getItem('user')
+    if (!userStr) {
+      router.push('/login')
+      return
+    }
+    const user = JSON.parse(userStr)
+    setStoreId(user.storeId)
+    
     fetchClientData()
   }, [clientId])
 
@@ -64,6 +76,8 @@ export default function ClientDetailPage() {
 
   const handleSubmitFiado = async (e: React.FormEvent) => {
     e.preventDefault()
+    setError('')
+    setSaving(true)
     
     try {
       const res = await fetch('/api/fiados', {
@@ -71,20 +85,28 @@ export default function ClientDetailPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           clientId,
+          storeId,
           type: fiadoType,
           amount: parseFloat(amount),
           description,
         }),
       })
 
+      const data = await res.json()
+
       if (res.ok) {
         setAmount('')
         setDescription('')
         setShowFiadoForm(false)
         fetchClientData() // Refresh data
+      } else {
+        setError(data.error || 'Error al guardar')
       }
     } catch (err) {
       console.error('Error:', err)
+      setError('Error de conexión')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -152,14 +174,14 @@ export default function ClientDetailPage() {
           <div className="grid grid-cols-2 gap-4 pt-4 border-t border-gray-200">
             <div>
               <p className="text-sm text-gray-600">Balance Actual</p>
-              <p className={`text-2xl font-bold ${client.currentDebt > 0 ? 'text-red-600' : 'text-green-600'}`}>
-                RD$ {client.currentDebt.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+              <p className={`text-2xl font-bold ${(client.currentDebt || 0) > 0 ? 'text-red-600' : 'text-green-600'}`}>
+                RD$ {(client.currentDebt || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
               </p>
             </div>
             <div>
               <p className="text-sm text-gray-600">Límite de Crédito</p>
               <p className="text-2xl font-bold text-gray-900">
-                RD$ {client.creditLimit.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                RD$ {(client.creditLimit || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
               </p>
             </div>
           </div>
@@ -178,6 +200,7 @@ export default function ClientDetailPage() {
             onClick={() => {
               setFiadoType('CHARGE')
               setShowFiadoForm(true)
+              setError('')
             }}
             className="bg-orange-600 text-white py-3 rounded-lg font-medium hover:bg-orange-700 transition-colors"
           >
@@ -187,6 +210,7 @@ export default function ClientDetailPage() {
             onClick={() => {
               setFiadoType('PAYMENT')
               setShowFiadoForm(true)
+              setError('')
             }}
             className="bg-green-600 text-white py-3 rounded-lg font-medium hover:bg-green-700 transition-colors"
           >
@@ -200,6 +224,13 @@ export default function ClientDetailPage() {
             <h3 className="text-lg font-semibold mb-4">
               {fiadoType === 'CHARGE' ? '💰 Nuevo Fiado' : '💵 Registrar Pago'}
             </h3>
+
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg mb-4">
+                {error}
+              </div>
+            )}
+
             <form onSubmit={handleSubmitFiado} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -232,9 +263,10 @@ export default function ClientDetailPage() {
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                  disabled={saving}
+                  className="flex-1 bg-indigo-600 text-white py-3 rounded-lg font-medium hover:bg-indigo-700 disabled:opacity-50 transition-colors"
                 >
-                  Guardar
+                  {saving ? 'Guardando...' : 'Guardar'}
                 </button>
                 <button
                   type="button"
@@ -285,10 +317,10 @@ export default function ClientDetailPage() {
                       <p className={`text-lg font-bold ${
                         fiado.type === 'CHARGE' ? 'text-red-600' : 'text-green-600'
                       }`}>
-                        {fiado.type === 'CHARGE' ? '+' : '-'}RD$ {fiado.amount.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                        {fiado.type === 'CHARGE' ? '+' : '-'}RD$ {(fiado.amount || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                       </p>
                       <p className="text-sm text-gray-600">
-                        Balance: RD$ {fiado.balance.toLocaleString('es-DO', { minimumFractionDigits: 2 })}
+                        Balance: RD$ {(fiado.balance || 0).toLocaleString('es-DO', { minimumFractionDigits: 2 })}
                       </p>
                     </div>
                   </div>

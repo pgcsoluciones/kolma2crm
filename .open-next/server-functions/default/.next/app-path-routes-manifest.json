@@ -8,10 +8,11 @@
   "/api/dashboard/route": "/api/dashboard",
   "/api/fiados/route": "/api/fiados",
   "/favicon.ico/route": "/favicon.ico",
+  "/dashboard/clients/new/page": "/dashboard/clients/new",
+  "/dashboard/clients/page": "/dashboard/clients",
   "/dashboard/page": "/dashboard",
   "/login/page": "/login",
   "/page": "/",
   "/register/page": "/register",
-  "/dashboard/clients/[id]/page": "/dashboard/clients/[id]",
-  "/dashboard/clients/page": "/dashboard/clients"
+  "/dashboard/clients/[id]/page": "/dashboard/clients/[id]"
 }

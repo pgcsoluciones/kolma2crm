@@ -70,6 +70,12 @@
       "namedRegex": "^/dashboard/clients(?:/)?$"
     },
     {
+      "page": "/dashboard/clients/new",
+      "regex": "^/dashboard/clients/new(?:/)?$",
+      "routeKeys": {},
+      "namedRegex": "^/dashboard/clients/new(?:/)?$"
+    },
+    {
       "page": "/favicon.ico",
       "regex": "^/favicon\\.ico(?:/)?$",
       "routeKeys": {},

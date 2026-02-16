@@ -22,10 +22,13 @@ export default function LoginPage() {
         body: JSON.stringify({ email, password }),
       })
 
-      if (res.ok) {
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        // Guardar datos del usuario en localStorage
+        localStorage.setItem('user', JSON.stringify(data.user))
         router.push('/dashboard')
       } else {
-        const data = await res.json()
         setError(data.error || 'Error al iniciar sesión')
       }
     } catch (err) {
